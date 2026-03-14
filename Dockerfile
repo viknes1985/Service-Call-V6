@@ -1,21 +1,18 @@
-# Use the official Node.js image
 FROM node:20-slim
 
-# Create app directory
 WORKDIR /app
 
-# Install app dependencies
 COPY package*.json ./
+# Install everything including typescript
 RUN npm install
 
-# Copy app source
 COPY . .
 
-# Build TypeScript if necessary (or just run ts-node)
-RUN npm install -g ts-node typescript
+# Compile TypeScript to JavaScript
+RUN npx tsc server.ts --outDir dist --esModuleInterop --skipLibCheck
 
-# Expose the port from your fly.toml
+# Expose port 3000
 EXPOSE 3000
 
-# Start the server
-CMD ["ts-node", "server.ts"]
+# Run the compiled JAVASCRIPT file instead of the .ts file
+CMD ["node", "dist/server.js"]
