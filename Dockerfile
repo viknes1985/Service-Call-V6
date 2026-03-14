@@ -1,11 +1,10 @@
 # 1. Use a modern Node.js base image
 FROM node:20-slim
 
-# 2. Set the working directory inside the container
+# 2. Set the working directory
 WORKDIR /app
 
 # 3. Copy package files and install all dependencies
-# We need typescript and ts-node during the build phase
 COPY package*.json ./
 RUN npm install
 
@@ -13,12 +12,17 @@ RUN npm install
 COPY . .
 
 # 5. Compile TypeScript to JavaScript
-# The flags --module esnext and --target esnext fix the 'import.meta' error
-RUN npx tsc server.ts --outDir dist --esModuleInterop --skipLibCheck --module esnext --target esnext
+# We added --moduleResolution node to help it find mongoose, axios, etc.
+RUN npx tsc server.ts --outDir dist \
+    --esModuleInterop \
+    --skipLibCheck \
+    --module esnext \
+    --target esnext \
+    --moduleResolution node \
+    --allowJs
 
-# 6. Fly.io needs to know which port to listen on
+# 6. Expose port 3000
 EXPOSE 3000
 
 # 7. Start the server using the compiled JavaScript file
-# We use dist/server.js because tsc puts the output in the 'dist' folder
 CMD ["node", "dist/server.js"]
